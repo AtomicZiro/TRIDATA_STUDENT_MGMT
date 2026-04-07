@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}TriData — Student Home{% endblock %}
+{% block page_title %}Student Dashboard{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Welcome, {{ student.full_name }}</h1>
+<p class="text-muted mb-4">Roll {{ student.roll_number }} · {{ student.course.name }}</p>
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card p-3 h-100">
+      <div class="text-muted small">Result Entries</div>
+      <div class="fs-2 fw-semibold">{{ result_count }}</div>
+      <a class="btn btn-sm btn-outline-primary mt-2 align-self-start" href="{{ url_for('student.results') }}">View results</a>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-3 h-100">
+      <div class="text-muted small">Profile</div>
+      <p class="mb-2 small">View your contact and course details.</p>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('student.profile') }}">Open profile</a>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-3 h-100">
+      <div class="text-muted small">Performance Analysis</div>
+      <p class="mb-2 small">Semester-wise totals and full summary.</p>
+      <a class="btn btn-sm btn-outline-primary" href="{{ url_for('student.report_card') }}">Open report card</a>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-6">
+    <div class="card p-3">
+      <h2 class="h6 text-uppercase text-muted mb-3">Progress Over Time</h2>
+      <canvas id="studentTrendChart" height="130"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card p-3">
+      <h2 class="h6 text-uppercase text-muted mb-3">Subject-wise Marks (%)</h2>
+      <canvas id="studentSubjectChart" height="130"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="card p-3 mt-3">
+  <h2 class="h6 text-uppercase text-muted">Training Info</h2>
+  <div class="table-responsive">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>Subject</th><th>Status</th><th>Reason</th><th>Session</th></tr></thead>
+      <tbody>
+        {% for t in training_items %}
+        <tr>
+          <td>{{ t.subject.code }}</td>
+          <td><span class="badge bg-secondary">{{ t.status }}</span></td>
+          <td>{{ t.reason }}</td>
+          <td>{{ t.session_date or "—" }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-muted text-center py-3">No training assigned yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <a class="btn btn-outline-secondary btn-sm mt-3 align-self-start" href="{{ url_for('student.training') }}">Open Training Tracker</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  new Chart(document.getElementById("studentTrendChart"), {
+    type: "line",
+    data: { labels: {{ sem_labels|tojson }}, datasets: [{ data: {{ sem_values|tojson }}, borderColor: "#3b82f6" }] },
+    options: { plugins: { legend: { display: false } } }
+  });
+  const subSubjectNames = {{ sub_subject_names|tojson }};
+  new Chart(document.getElementById("studentSubjectChart"), {
+    type: "bar",
+    data: { labels: {{ sub_labels|tojson }}, datasets: [{ data: {{ sub_values|tojson }}, backgroundColor: "rgba(59,130,246,0.7)" }] },
+    options: {
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            afterLabel(ctx) {
+              const i = ctx.dataIndex;
+              const n = subSubjectNames[i];
+              return n ? `Subject: ${n}` : "";
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}

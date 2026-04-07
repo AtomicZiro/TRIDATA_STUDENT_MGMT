@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Results — {{ student.roll_number }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+  <div>
+    <h1 class="h3 mb-1">{{ student.full_name }}</h1>
+    <p class="text-muted mb-0">Roll {{ student.roll_number }} · {{ student.course.code }} — {{ student.course.name }}</p>
+  </div>
+  <div>
+    <a class="btn btn-success" href="{{ url_for('admin.student_results_download', sid=student.id, format='csv') }}">Overall CSV</a>
+    <a class="btn btn-outline-success" href="{{ url_for('admin.student_results_download', sid=student.id, format='pdf') }}">Overall PDF</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.students_list') }}">Back</a>
+  </div>
+</div>
+{% if not by_sem %}
+<p class="text-muted">No results on file.</p>
+{% else %}
+{% for sem, rows in by_sem|dictsort %}
+<div class="card mb-3">
+  <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+    <span>Semester {{ sem }}</span>
+    <span>
+      <a class="btn btn-sm btn-outline-success" href="{{ url_for('admin.student_results_download', sid=student.id, semester=sem, format='csv') }}">CSV</a>
+      <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.student_results_download', sid=student.id, semester=sem, format='pdf') }}">PDF</a>
+    </span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm mb-0">
+      <thead>
+        <tr>
+          <th>Subject</th><th>Year</th><th class="marks-int">Internal</th><th class="marks-ext">External</th><th>Total</th><th>Max</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>{{ r.subject.code }} — {{ r.subject.name }}</td>
+          <td>{{ r.academic_year }}</td>
+          <td class="marks-int">{{ r.internal_marks }} <span class="text-muted small">/ {{ r.subject.max_internal }}</span></td>
+          <td class="marks-ext">{{ r.external_marks }} <span class="text-muted small">/ {{ r.subject.max_external }}</span></td>
+          <td class="fw-semibold">{{ '%.1f'|format(r.total_marks) }}</td>
+          <td class="text-muted small">{{ r.subject.max_internal + r.subject.max_external }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}

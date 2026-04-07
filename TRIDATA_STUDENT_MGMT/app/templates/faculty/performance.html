@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Faculty Performance{% endblock %}
+{% block page_title %}Class Performance{% endblock %}
+{% block content %}
+<form method="get" class="card p-3 mb-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-6">
+      <label class="form-label" for="subject_id">Subject</label>
+      <select class="form-select" id="subject_id" name="subject_id">
+        <option value="">Select subject</option>
+        {% for s in subjects %}
+        <option value="{{ s.id }}" {% if selected_subject_id == s.id %}selected{% endif %}>{{ s.code }} - {{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3"><button class="btn btn-primary" type="submit">View</button></div>
+  </div>
+</form>
+
+<div class="row g-3">
+  <div class="col-lg-6"><div class="card p-3"><h2 class="h6 text-uppercase text-muted">Student-wise Performance</h2><canvas id="studentPerfChart" height="130"></canvas></div></div>
+  <div class="col-lg-6"><div class="card p-3"><h2 class="h6 text-uppercase text-muted">Subject Trend</h2><canvas id="subjectTrendChart" height="130"></canvas></div></div>
+</div>
+
+<div class="card p-3 mt-3">
+  <h2 class="h6 text-uppercase text-muted">Weak Students List (&lt; 40 marks row)</h2>
+  <div class="small">
+    {% for s in weak_students %}
+      <span class="badge bg-danger-subtle text-danger me-1">{{ s.roll_number }}</span>
+    {% else %}
+      <span class="text-muted">No weak students for selected subject.</span>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  new Chart(document.getElementById("studentPerfChart"), {
+    type: "bar",
+    data: { labels: {{ chart_labels|tojson }}, datasets: [{ data: {{ chart_values|tojson }}, backgroundColor: "rgba(59,130,246,0.7)" }] },
+    options: { plugins: { legend: { display: false } } }
+  });
+  new Chart(document.getElementById("subjectTrendChart"), {
+    type: "line",
+    data: { labels: {{ trend_labels|tojson }}, datasets: [{ data: {{ trend_values|tojson }}, borderColor: "#22c55e" }] },
+    options: { plugins: { legend: { display: false } } }
+  });
+</script>
+{% endblock %}

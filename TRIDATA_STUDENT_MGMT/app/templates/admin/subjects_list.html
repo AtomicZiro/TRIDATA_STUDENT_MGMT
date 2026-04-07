@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Subjects{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Subjects</h1>
+  <a class="btn btn-primary" href="{{ url_for('admin.subject_add') }}">Add subject</a>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr><th>Course</th><th>Code</th><th>Name</th><th>Max int.</th><th>Max ext.</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for s in subjects %}
+        <tr>
+          <td>{{ s.course.code }} — {{ s.course.name }}</td>
+          <td class="fw-medium">{{ s.code }}</td>
+          <td>{{ s.name }}</td>
+          <td>{{ s.max_internal }}</td>
+          <td>{{ s.max_external }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin.subject_edit', sid=s.id) }}">Edit</a>
+            <form class="d-inline" method="post" action="{{ url_for('admin.subject_delete', sid=s.id) }}" onsubmit="return confirm('Delete subject and its results?');">
+              <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-muted py-4 text-center">No subjects. Add a course first, then subjects.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

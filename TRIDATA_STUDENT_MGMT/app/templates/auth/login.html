@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Sign in — TriData{% endblock %}
+{% block guest_main_class %}login-main{% endblock %}
+{% block content %}
+<div class="login-page">
+  <div class="login-backdrop" aria-hidden="true"></div>
+  <div class="login-grid container-fluid px-3 px-lg-4">
+    <div class="row g-4 g-xl-5 align-items-stretch justify-content-center">
+      <div class="col-lg-5 col-xl-5 d-none d-lg-flex">
+        <div class="login-hero card h-100 w-100 border-0">
+          <div class="login-hero-inner">
+            <div class="login-hero-brand">
+              <span class="login-hero-dot"></span>
+              <span class="login-hero-name">TriData</span>
+            </div>
+            <h2 class="login-hero-title">Results, analytics, and performance in one place.</h2>
+            <p class="login-hero-lead">A focused workspace for admins, faculty, and students—built around clear dashboards, secure access, and structured academic data.</p>
+            <ul class="login-hero-list list-unstyled mb-0">
+              <li><i class="bi bi-check-circle-fill"></i> Role-based dashboards</li>
+              <li><i class="bi bi-check-circle-fill"></i> CSV results &amp; report tools</li>
+              <li><i class="bi bi-check-circle-fill"></i> Training &amp; performance tracking</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-11 col-lg-6 col-xl-5">
+        <div class="login-card-wrap">
+          <div class="card login-card border-0">
+            <div class="login-card-glow" aria-hidden="true"></div>
+            <div class="card-body p-4 p-md-5 position-relative">
+              <div class="text-center d-lg-none mb-4">
+                <div class="login-mobile-brand">
+                  <span class="login-hero-dot"></span>
+                  <span class="login-hero-name">TriData</span>
+                </div>
+              </div>
+              <p class="login-eyebrow text-center mb-2">Secure access</p>
+              <h1 class="login-heading h3 text-center mb-1">Sign in</h1>
+              <p class="login-sub text-muted small text-center mb-4">Admin: username · Faculty: employee ID · Student: roll number</p>
+
+              <div class="login-roles mb-4">
+                <span class="login-role-pill"><i class="bi bi-shield-lock"></i> Admin</span>
+                <span class="login-role-pill"><i class="bi bi-person-badge"></i> Faculty</span>
+                <span class="login-role-pill"><i class="bi bi-mortarboard"></i> Student</span>
+              </div>
+
+              <form method="post" class="login-form">
+                <div class="mb-3">
+                  <label class="form-label" for="username">Login ID</label>
+                  <div class="input-group login-input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input class="form-control" id="username" name="username" required autocomplete="username" placeholder="Admin username, employee ID, or roll number">
+                  </div>
+                  <div class="form-text text-muted small">See role hints above for which ID to use.</div>
+                </div>
+                <div class="mb-4">
+                  <label class="form-label" for="password">Password</label>
+                  <div class="input-group login-input-group">
+                    <span class="input-group-text"><i class="bi bi-key"></i></span>
+                    <input type="password" class="form-control" id="password" name="password" required autocomplete="current-password" placeholder="Enter password">
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary login-submit w-100 py-2">
+                  <i class="bi bi-box-arrow-in-right me-2"></i>Continue to dashboard
+                </button>
+              </form>
+
+              <details class="login-details mt-4">
+                <summary class="login-details-summary">Local setup &amp; demo accounts</summary>
+                <div class="login-details-body small text-muted mt-2">
+                  <p class="mb-2">First run: <code class="login-code">python run.py init</code></p>
+                  <p class="mb-2">Reset admin: <code class="login-code">python run.py reset-admin</code> — default <code class="login-code">admin123</code>.</p>
+                  <p class="mb-0">Sample data: <code class="login-code">python run.py seed-mca</code> — e.g. student <code class="login-code">CS001</code> / <code class="login-code">student123</code>, faculty <code class="login-code">FAC-CS-01</code> / <code class="login-code">faculty123</code>.</p>
+                </div>
+              </details>
+            </div>
+          </div>
+          <p class="login-foot text-center small text-muted mt-3 mb-0">TriData · Student results analysis &amp; performance dashboard</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

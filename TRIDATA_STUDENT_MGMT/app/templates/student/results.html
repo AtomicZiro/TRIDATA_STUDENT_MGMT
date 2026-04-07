@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}My results{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">My results</h1>
+<p class="text-muted small mb-3">Internal and external marks are listed separately.</p>
+<form class="mb-3" method="get">
+  <div class="row g-2 align-items-end">
+    <div class="col-auto">
+      <label class="form-label small mb-0" for="semester">Semester</label>
+      <select class="form-select" id="semester" name="semester" onchange="this.form.submit()">
+        <option value="">All semesters</option>
+        {% for s in semesters %}
+        <option value="{{ s }}" {% if filter_semester == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('student.results') }}">Clear</a>
+    </div>
+  </div>
+</form>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Subject</th><th>Sem</th><th>Year</th>
+          <th class="marks-int">Internal</th><th class="marks-ext">External</th><th>Total</th><th>Max</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results %}
+        <tr>
+          <td>{{ r.subject.code }} — {{ r.subject.name }}</td>
+          <td>{{ r.semester }}</td>
+          <td>{{ r.academic_year }}</td>
+          <td class="marks-int">{{ r.internal_marks }} <span class="text-muted small">/ {{ r.subject.max_internal }}</span></td>
+          <td class="marks-ext">{{ r.external_marks }} <span class="text-muted small">/ {{ r.subject.max_external }}</span></td>
+          <td class="fw-semibold">{{ '%.1f'|format(r.total_marks) }}</td>
+          <td class="text-muted small">{{ r.subject.max_internal + r.subject.max_external }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-muted py-4 text-center">No results published yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

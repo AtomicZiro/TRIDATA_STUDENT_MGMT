@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Faculty Assignments{% endblock %}
+{% block page_title %}Faculty Subject Assignment{% endblock %}
+{% block content %}
+<div class="card p-3 mb-3">
+  <form method="post" class="row g-2 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label" for="faculty_id">Faculty</label>
+      <select class="form-select" id="faculty_id" name="faculty_id" required>
+        <option value="">Select</option>
+        {% for f in faculties %}
+        <option value="{{ f.id }}">{{ f.full_name }} ({{ f.employee_id or "—" }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-5">
+      <label class="form-label" for="subject_id">Subject</label>
+      <select class="form-select" id="subject_id" name="subject_id" required>
+        <option value="">Select</option>
+        {% for s in subjects %}
+        <option value="{{ s.id }}">{{ s.course.code }} - {{ s.code }} ({{ s.name }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button class="btn btn-primary w-100" type="submit">Assign Subject</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Faculty</th><th>Course</th><th>Subject</th><th></th></tr></thead>
+      <tbody>
+        {% for a in assignments %}
+        <tr>
+          <td>{{ a.faculty.full_name }}</td>
+          <td>{{ a.subject.course.code }}</td>
+          <td>{{ a.subject.code }} - {{ a.subject.name }}</td>
+          <td class="text-end">
+            <form method="post" action="{{ url_for('admin.faculty_assignment_delete', aid=a.id) }}">
+              <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-center py-4 text-muted">No assignments found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
