@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Results Analytics{% endblock %}
+{% block page_title %}Results Analytics{% endblock %}
+{% block content %}
+<div class="card p-3 mb-3">
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label" for="course_id">Course</label>
+      <select class="form-select" id="course_id" name="course_id">
+        <option value="">All</option>
+        {% for c in courses %}
+        <option value="{{ c.id }}" {% if filters.course_id == c.id %}selected{% endif %}>{{ c.code }} - {{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" for="subject_id">Subject</label>
+      <select class="form-select" id="subject_id" name="subject_id">
+        <option value="">All</option>
+        {% for s in subjects %}
+        <option value="{{ s.id }}" {% if filters.subject_id == s.id %}selected{% endif %}>{{ s.course.code }} - {{ s.code }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="student_id">Student</label>
+      <select class="form-select" id="student_id" name="student_id">
+        <option value="">All</option>
+        {% for s in students %}
+        <option value="{{ s.id }}" {% if filters.student_id == s.id %}selected{% endif %}>{{ s.roll_number }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-1">
+      <label class="form-label" for="semester">Sem</label>
+      <input class="form-control" id="semester" name="semester" type="number" min="1" value="{{ filters.semester or '' }}">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="study_year">Year</label>
+      <select class="form-select" id="study_year" name="study_year">
+        <option value="">All</option>
+        {% for y in year_options %}
+        <option value="{{ y }}" {% if filters.study_year == y %}selected{% endif %}>Year {{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-1 d-flex gap-2">
+      <button class="btn btn-primary w-100" type="submit">Go</button>
+    </div>
+  </form>
+</div>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.analytics_export_csv', **export_params) }}">Export Filtered CSV</a>
+  <button id="downloadPngBtn" class="btn btn-outline-secondary btn-sm" type="button">Download Charts PNG</button>
+  <button id="downloadPdfBtn" class="btn btn-outline-secondary btn-sm" type="button">Download Charts PDF</button>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3"><div class="card p-3"><div class="small text-muted">Filtered Rows</div><div class="fs-4 fw-semibold">{{ row_count }}</div></div></div>
+  <div class="col-md-3"><div class="card p-3"><div class="small text-muted">Average Internal</div><div class="fs-4 fw-semibold">{{ avg_internal }}</div></div></div>
+  <div class="col-md-3"><div class="card p-3"><div class="small text-muted">Average External</div><div class="fs-4 fw-semibold">{{ avg_external }}</div></div></div>
+  <div class="col-md-3"><div class="card p-3"><div class="small text-muted">Pass / Fail</div><div class="fs-4 fw-semibold">{{ pass_fail.pass }} / {{ pass_fail.fail }}</div></div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-xl-6"><div class="card p-3"><h2 class="h6 text-uppercase text-muted">Subject-wise Average (%)</h2><canvas id="subjectWiseChart" height="130"></canvas></div></div>
+  <div class="col-xl-6"><div class="card p-3"><h2 class="h6 text-uppercase text-muted">Student-wise Average (%)</h2><canvas id="studentWiseChart" height="130"></canvas></div></div>
+  <div class="col-xl-6"><div class="card p-3"><h2 class="h6 text-uppercase text-muted">Semester-wise Trend (%)</h2><canvas id="semesterWiseChart" height="130"></canvas></div></div>
+  <div class="col-xl-3"><div class="card p-3"><h2 class="h6 text-uppercase text-muted">Pass vs Fail</h2><canvas id="passFailAnalyticsChart" height="130"></canvas></div></div>
+  <div class="col-xl-3"><div class="card p-3"><h2 class="h6 text-uppercase text-muted">Student Performance Bands</h2><canvas id="bucketChart" height="130"></canvas></div></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script>
+  const subjectLabels = {{ subject_labels|tojson }};
+  const subjectNameLabels = {{ subject_name_labels|tojson }};
+  const subjectAvg = {{ subject_avg|tojson }};
+  const studentLabels = {{ student_labels|tojson }};
+  const studentAvg = {{ student_avg|tojson }};
+  const semLabels = {{ sem_labels|tojson }};
+  const semAvg = {{ sem_avg|tojson }};
+  const passFail = {{ pass_fail|tojson }};
+  const bucketLabels = {{ bucket_labels|tojson }};
+  const bucketValues = {{ bucket_values|tojson }};
+
+  const chartRefs = [];
+
+  chartRefs.push(new Chart(document.getElementById("subjectWiseChart"), {
+    type: "bar",
+    data: { labels: subjectLabels, datasets: [{ data: subjectAvg, backgroundColor: "rgba(59,130,246,0.7)" }] },
+    options: {
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            afterLabel: function (context) {
+              const idx = context.dataIndex;
+              return "Subject: " + (subjectNameLabels[idx] || "");
+            }
+          }
+        }
+      }
+    }
+  }));
+
+  chartRefs.push(new Chart(document.getElementById("studentWiseChart"), {
+    type: "bar",
+    data: { labels: studentLabels, datasets: [{ data: studentAvg, backgroundColor: "rgba(34,197,94,0.7)" }] },
+    options: { plugins: { legend: { display: false } } }
+  }));
+
+  chartRefs.push(new Chart(document.getElementById("semesterWiseChart"), {
+    type: "line",
+    data: { labels: semLabels, datasets: [{ data: semAvg, borderColor: "#3b82f6", backgroundColor: "rgba(59,130,246,0.25)", fill: true }] },
+    options: { plugins: { legend: { display: false } } }
+  }));
+
+  chartRefs.push(new Chart(document.getElementById("passFailAnalyticsChart"), {
+    type: "doughnut",
+    data: { labels: ["Pass", "Fail"], datasets: [{ data: [passFail.pass, passFail.fail], backgroundColor: ["#22c55e", "#ef4444"] }] }
+  }));
+
+  chartRefs.push(new Chart(document.getElementById("bucketChart"), {
+    type: "polarArea",
+    data: { labels: bucketLabels, datasets: [{ data: bucketValues, backgroundColor: ["#ef4444", "#f59e0b", "#3b82f6", "#22c55e"] }] },
+    options: { plugins: { legend: { position: "bottom" } } }
+  }));
+
+  function chartFileName(prefix, idx) {
+    const d = new Date();
+    const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+    return `${prefix}_${idx + 1}_${stamp}`;
+  }
+
+  document.getElementById("downloadPngBtn").addEventListener("click", function () {
+    chartRefs.forEach((ch, idx) => {
+      const link = document.createElement("a");
+      link.href = ch.toBase64Image("image/png", 1);
+      link.download = chartFileName("analytics_chart", idx) + ".png";
+      link.click();
+    });
+  });
+
+  document.getElementById("downloadPdfBtn").addEventListener("click", async function () {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    chartRefs.forEach((ch, idx) => {
+      if (idx > 0) pdf.addPage();
+      const img = ch.toBase64Image("image/png", 1);
+      const pad = 28;
+      pdf.setFontSize(14);
+      pdf.text(`TriData Analytics Chart ${idx + 1}`, pad, 28);
+      pdf.addImage(img, "PNG", pad, 44, pageW - pad * 2, pageH - 70);
+    });
+    pdf.save(chartFileName("analytics_charts", 0) + ".pdf");
+  });
+</script>
+{% endblock %}

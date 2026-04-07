@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}All results{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h1 class="h3 mb-0">Results</h1>
+  <a class="btn btn-primary" href="{{ url_for('admin.results_upload') }}">Upload CSV</a>
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-auto"><input class="form-control" name="roll" placeholder="Roll number" value="{{ roll or '' }}"></div>
+  <div class="col-auto"><input class="form-control" type="number" min="1" name="semester" placeholder="Semester" value="{{ semester or '' }}"></div>
+  <div class="col-auto"><input class="form-control" name="year" placeholder="Academic year" value="{{ year or '' }}"></div>
+  <div class="col-auto"><button type="submit" class="btn btn-outline-secondary">Filter</button></div>
+</form>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Roll</th><th>Student</th><th>Subject</th><th>Sem</th><th>Year</th>
+          <th class="marks-int">Internal</th><th class="marks-ext">External</th><th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results %}
+        <tr>
+          <td>{{ r.student.roll_number }}</td>
+          <td>{{ r.student.full_name }}</td>
+          <td>{{ r.subject.code }} — {{ r.subject.name }}</td>
+          <td>{{ r.semester }}</td>
+          <td>{{ r.academic_year }}</td>
+          <td class="marks-int">{{ r.internal_marks }}</td>
+          <td class="marks-ext">{{ r.external_marks }}</td>
+          <td class="fw-semibold">{{ '%.1f'|format(r.total_marks) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-muted py-4 text-center">No rows. Upload a CSV or adjust filters.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<p class="text-muted small mt-3 mb-0">Tip: open a student from <a href="{{ url_for('admin.students_list') }}">Students</a> for per-student view and CSV download.</p>
+{% endblock %}

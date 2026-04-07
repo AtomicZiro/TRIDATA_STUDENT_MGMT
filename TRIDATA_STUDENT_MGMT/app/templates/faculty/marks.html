@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Faculty Marks Management{% endblock %}
+{% block page_title %}Marks Management{% endblock %}
+{% block content %}
+<div class="card p-3 mb-3">
+  <form method="post" class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label" for="subject_id">Subject</label>
+      <select class="form-select" id="subject_id" name="subject_id" required>
+        <option value="">Select subject</option>
+        {% for s in subjects %}
+        <option value="{{ s.id }}" {% if selected_subject_id == s.id %}selected{% endif %}>{{ s.code }} - {{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2"><label class="form-label">Roll</label><input class="form-control" name="roll_number" required></div>
+    <div class="col-md-1"><label class="form-label">Sem</label><input class="form-control" type="number" min="1" name="semester" value="1"></div>
+    <div class="col-md-2"><label class="form-label">Year</label><input class="form-control" name="academic_year" value="2025-26"></div>
+    <div class="col-md-2"><label class="form-label">Internal</label><input class="form-control" type="number" step="0.1" name="internal_marks"></div>
+    <div class="col-md-2"><label class="form-label">External</label><input class="form-control" type="number" step="0.1" name="external_marks"></div>
+    <div class="col-12"><button class="btn btn-primary" type="submit">Save Marks</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0">
+      <thead><tr><th>Roll</th><th>Name</th><th>Sem</th><th>Year</th><th>Internal</th><th>External</th><th>Total</th></tr></thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>{{ r.student.roll_number }}</td>
+          <td>{{ r.student.full_name }}</td>
+          <td>{{ r.semester }}</td>
+          <td>{{ r.academic_year }}</td>
+          <td>{{ r.internal_marks }}</td>
+          <td>{{ r.external_marks }}</td>
+          <td>{{ '%.1f'|format(r.total_marks) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center py-4 text-muted">Choose subject and add data.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Profile — TriData{% endblock %}
+{% block page_title %}My profile{% endblock %}
+{% block content %}
+
+<div class="profile-hero card mb-4">
+  <div class="profile-hero-inner">
+    <div class="profile-avatar" aria-hidden="true">{{ profile_initials[:2] if profile_initials else '?' }}</div>
+    <div class="profile-hero-text flex-grow-1">
+      <h1 class="profile-name h4 mb-1">{{ student.full_name }}</h1>
+      <p class="profile-meta mb-0">Roll <span class="text-white fw-semibold">{{ student.roll_number }}</span> · {{ student.course.code }} — {{ student.course.name }}</p>
+      <p class="profile-hint small text-muted mb-0 mt-2">Use your roll number and password to sign in. Keep your contact details below up to date where your college allows edits.</p>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card profile-stat kpi-card p-3 h-100">
+      <div class="small text-muted text-uppercase" style="letter-spacing: 0.05em;">Result rows</div>
+      <div class="fs-3 fw-semibold text-white mt-1">{{ stat_results }}</div>
+      <div class="small text-muted mt-1">Recorded marks in the system</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card profile-stat kpi-card p-3 h-100">
+      <div class="small text-muted text-uppercase" style="letter-spacing: 0.05em;">Subjects</div>
+      <div class="fs-3 fw-semibold text-white mt-1">{{ stat_subjects }}</div>
+      <div class="small text-muted mt-1">Distinct subjects with results</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card profile-stat kpi-card p-3 h-100">
+      <div class="small text-muted text-uppercase" style="letter-spacing: 0.05em;">Semesters</div>
+      <div class="fs-3 fw-semibold text-white mt-1">{{ stat_semesters }}</div>
+      <div class="small text-muted mt-1">Semesters covered so far</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card profile-stat kpi-card p-3 h-100">
+      <div class="small text-muted text-uppercase" style="letter-spacing: 0.05em;">Training</div>
+      <div class="fs-3 fw-semibold text-white mt-1">{{ stat_training }}</div>
+      <div class="small text-muted mt-1">Assigned support sessions</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 align-items-start">
+  <div class="col-lg-7">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="card profile-tile h-100 p-3">
+          <h2 class="profile-tile-title"><i class="bi bi-mortarboard-fill me-2 text-primary"></i>Academic</h2>
+          <ul class="list-unstyled profile-detail-list mb-0">
+            <li><span class="label">Course code</span><span class="value">{{ student.course.code }}</span></li>
+            <li><span class="label">Programme</span><span class="value">{{ student.course.name }}</span></li>
+            <li><span class="label">Duration</span><span class="value">{% if course_years %}{{ course_years }} year{% if course_years != 1 %}s{% endif %}{% else %}—{% endif %}</span></li>
+            <li><span class="label">Program year (latest)</span><span class="value">{% if program_year_reached %}Year {{ program_year_reached }}{% else %}—{% endif %}</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card profile-tile h-100 p-3">
+          <h2 class="profile-tile-title"><i class="bi bi-envelope-at-fill me-2 text-primary"></i>Contact</h2>
+          <ul class="list-unstyled profile-detail-list mb-0">
+            <li><span class="label">Email</span><span class="value">{% if student.email %}<a class="link-light text-decoration-underline" href="mailto:{{ student.email }}">{{ student.email }}</a>{% else %}<span class="text-muted">Not on file</span>{% endif %}</span></li>
+            <li><span class="label">Phone</span><span class="value">{{ student.phone or 'Not on file' }}</span></li>
+          </ul>
+          <p class="small text-muted mb-0 mt-3">To update email or phone, contact your department office if these fields are managed by admin.</p>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="card profile-tile p-3">
+          <h2 class="profile-tile-title"><i class="bi bi-shield-lock me-2 text-primary"></i>Account</h2>
+          <ul class="list-unstyled profile-detail-list mb-3">
+            <li><span class="label">Login ID</span><span class="value font-monospace">{{ student.roll_number }}</span></li>
+            <li><span class="label">System username</span><span class="value font-monospace small text-muted">{{ student.user_account.username }}</span></li>
+            <li><span class="label">Role</span><span class="value"><span class="badge rounded-pill bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25">Student</span></span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="card profile-quicklinks p-3">
+          <h2 class="profile-tile-title mb-3"><i class="bi bi-lightning-charge-fill me-2 text-primary"></i>Shortcuts</h2>
+          <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('student.dashboard') }}"><i class="bi bi-house-door me-1"></i>Home</a>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('student.results') }}"><i class="bi bi-clipboard-data me-1"></i>Results</a>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('student.report_card') }}"><i class="bi bi-award me-1"></i>Report card</a>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('student.analytics') }}"><i class="bi bi-pie-chart me-1"></i>Analytics</a>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('student.training') }}"><i class="bi bi-mortarboard me-1"></i>Training</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card profile-password-card p-4 h-100">
+      <h2 class="profile-tile-title mb-1"><i class="bi bi-key-fill me-2 text-primary"></i>Change password</h2>
+      <p class="small text-muted mb-4">Choose a strong password you have not used elsewhere. Minimum 8 characters.</p>
+      <form method="post" action="{{ url_for('student.profile') }}">
+        <input type="hidden" name="action" value="change_password">
+        <div class="mb-3">
+          <label class="form-label" for="current_password">Current password</label>
+          <input class="form-control" type="password" id="current_password" name="current_password" autocomplete="current-password" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="new_password">New password</label>
+          <input class="form-control" type="password" id="new_password" name="new_password" autocomplete="new-password" required minlength="8">
+        </div>
+        <div class="mb-4">
+          <label class="form-label" for="confirm_password">Confirm new password</label>
+          <input class="form-control" type="password" id="confirm_password" name="confirm_password" autocomplete="new-password" required minlength="8">
+        </div>
+        <button class="btn btn-primary w-100" type="submit"><i class="bi bi-check2-circle me-1"></i>Update password</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

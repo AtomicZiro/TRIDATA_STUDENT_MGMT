@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Student Analytics{% endblock %}
+{% block page_title %}Student Analytics{% endblock %}
+{% block content %}
+<div class="card p-3 mb-3">
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label" for="study_year">Year</label>
+      <select class="form-select" id="study_year" name="study_year">
+        <option value="">All</option>
+        {% for y in year_options %}
+        <option value="{{ y }}" {% if filters.study_year == y %}selected{% endif %}>Year {{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" for="semester">Semester</label>
+      <select class="form-select" id="semester" name="semester">
+        <option value="">All</option>
+        {% for s in sem_options %}
+        <option value="{{ s }}" {% if filters.semester == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-5 d-flex gap-2">
+      <button class="btn btn-primary" type="submit">Apply Filters</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('student.analytics') }}">Clear</a>
+    </div>
+  </form>
+</div>
+
+{% if row_count > 0 %}
+<div class="row g-3 mb-3">
+  <div class="col-md-3"><div class="card p-3"><div class="small text-muted">Your result rows (filtered)</div><div class="fs-4 fw-semibold">{{ row_count }}</div></div></div>
+  <div class="col-md-3"><div class="card p-3"><div class="small text-muted">Avg Internal</div><div class="fs-4 fw-semibold">{{ avg_internal }}</div></div></div>
+  <div class="col-md-3"><div class="card p-3"><div class="small text-muted">Avg External</div><div class="fs-4 fw-semibold">{{ avg_external }}</div></div></div>
+  <div class="col-md-3"><div class="card p-3"><div class="small text-muted">Pass / Fail (papers)</div><div class="fs-4 fw-semibold">{{ pass_fail.pass }} / {{ pass_fail.fail }}</div></div></div>
+</div>
+{% else %}
+<div class="alert alert-info mb-3">No result rows match these filters for your record. Clear filters or upload results to see analytics.</div>
+{% endif %}
+
+<div class="row g-3">
+  {% if show_subject_chart %}
+  <div class="col-xl-6"><div class="card p-3"><h2 class="h6 text-uppercase text-muted">Your subject-wise performance (%)</h2><canvas id="studentSubChart" height="130"></canvas></div></div>
+  {% endif %}
+  {% if show_semester_trend %}
+  <div class="col-xl-6"><div class="card p-3"><h2 class="h6 text-uppercase text-muted">Your semester trend (%)</h2><p class="small text-muted mb-2">Your average % across semesters in this filter.</p><canvas id="studentSemChart" height="130"></canvas></div></div>
+  {% endif %}
+  {% if show_year_trend %}
+  <div class="col-xl-6"><div class="card p-3"><h2 class="h6 text-uppercase text-muted">Your year-wise trend (%)</h2><p class="small text-muted mb-2">Your average % across academic years in this filter.</p><canvas id="studentYearChart" height="130"></canvas></div></div>
+  {% endif %}
+  {% if show_pass_fail and row_count > 0 %}
+  <div class="col-xl-3"><div class="card p-3"><h2 class="h6 text-uppercase text-muted">Your pass vs fail</h2><p class="small text-muted mb-2">Per subject paper in this filter.</p><canvas id="studentPassFailChart" height="130"></canvas></div></div>
+  {% endif %}
+  {% if show_score_bands %}
+  <div class="col-xl-3"><div class="card p-3"><h2 class="h6 text-uppercase text-muted">Your subject score bands</h2><p class="small text-muted mb-2">Count of your subjects in each performance band.</p><canvas id="studentBandsChart" height="130"></canvas></div></div>
+  {% endif %}
+</div>
+
+{% if row_count > 0 and not show_semester_trend and not show_year_trend and not show_score_bands %}
+<p class="small text-muted mb-0">Tip: widen filters (e.g. all semesters/years) to unlock trend and band charts when your data has enough points.</p>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const subjectLabels = {{ subject_labels|tojson }};
+  const subjectNameLabels = {{ subject_name_labels|tojson }};
+  const subjectAvg = {{ subject_avg|tojson }};
+  const semLabels = {{ sem_labels|tojson }};
+  const semAvg = {{ sem_avg|tojson }};
+  const yearLabels = {{ year_labels|tojson }};
+  const yearAvg = {{ year_avg|tojson }};
+  const passFail = {{ pass_fail|tojson }};
+  const bucketLabels = {{ bucket_labels|tojson }};
+  const bucketValues = {{ bucket_values|tojson }};
+
+  {% if show_subject_chart %}
+  new Chart(document.getElementById("studentSubChart"), {
+    type: "bar",
+    data: { labels: subjectLabels, datasets: [{ label: "Your %", data: subjectAvg, backgroundColor: "rgba(59,130,246,0.7)" }] },
+    options: {
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            afterLabel(ctx) {
+              const i = ctx.dataIndex;
+              const n = subjectNameLabels[i];
+              return n ? `Subject: ${n}` : "";
+            }
+          }
+        }
+      }
+    }
+  });
+  {% endif %}
+
+  {% if show_semester_trend %}
+  new Chart(document.getElementById("studentSemChart"), {
+    type: "line",
+    data: { labels: semLabels, datasets: [{ label: "Your avg %", data: semAvg, borderColor: "#22c55e", backgroundColor: "rgba(34,197,94,0.2)", fill: true }] },
+    options: { plugins: { legend: { display: false } } }
+  });
+  {% endif %}
+
+  {% if show_year_trend %}
+  new Chart(document.getElementById("studentYearChart"), {
+    type: "line",
+    data: { labels: yearLabels, datasets: [{ label: "Your avg %", data: yearAvg, borderColor: "#f59e0b", backgroundColor: "rgba(245,158,11,0.2)", fill: true }] },
+    options: { plugins: { legend: { display: false } } }
+  });
+  {% endif %}
+
+  {% if show_pass_fail and row_count > 0 %}
+  new Chart(document.getElementById("studentPassFailChart"), {
+    type: "doughnut",
+    data: { labels: ["Pass", "Fail"], datasets: [{ data: [passFail.pass, passFail.fail], backgroundColor: ["#22c55e", "#ef4444"] }] }
+  });
+  {% endif %}
+
+  {% if show_score_bands %}
+  new Chart(document.getElementById("studentBandsChart"), {
+    type: "polarArea",
+    data: { labels: bucketLabels, datasets: [{ data: bucketValues, backgroundColor: ["#ef4444", "#f59e0b", "#3b82f6", "#22c55e"] }] },
+    options: { plugins: { legend: { position: "bottom" } } }
+  });
+  {% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,4 @@
+.\.venv\Scripts\python run.py reset-admin
+
+admin
+admin123

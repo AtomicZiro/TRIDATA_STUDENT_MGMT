@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{% if course %}Edit{% else %}Add{% endif %} course{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">{% if course %}Edit{% else %}Add{% endif %} course</h1>
+<div class="card p-4" style="max-width: 32rem;">
+  <form method="post">
+    <div class="mb-3">
+      <label class="form-label" for="code">Course code</label>
+      <input class="form-control" id="code" name="code" required value="{{ course.code if course else '' }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="name">Name</label>
+      <input class="form-control" id="name" name="name" required value="{{ course.name if course else '' }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="duration_years">Duration (years)</label>
+      <input class="form-control" type="number" min="1" max="10" id="duration_years" name="duration_years" value="{{ course.duration_years if course else 4 }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.courses_list') }}">Cancel</a>
+  </form>
+</div>
+{% endblock %}
